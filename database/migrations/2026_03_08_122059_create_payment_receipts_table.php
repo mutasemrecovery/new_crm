@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('receipt_number')->unique();           // RCP-2026-001
             $table->foreignId('contract_payment_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('issued_by')->constrained('users');
+            $table->foreignId('issued_by')->constrained('admins');
 
             $table->decimal('amount', 10, 2);                     // المبلغ المقبوض
             $table->date('receipt_date');

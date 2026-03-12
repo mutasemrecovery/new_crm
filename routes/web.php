@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Employee\LeaveController;
+use App\Http\Controllers\Employee\PayrollController;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
@@ -31,7 +33,7 @@ Route::group([
         });
 
         // ── Protected (authenticated employee) ────────────
-        Route::middleware('auth')->group(function () {
+        Route::middleware('auth:web')->group(function () {
 
             // Logout
             Route::post('logout', [\App\Http\Controllers\Employee\LoginController::class, 'logout'])->name('logout');
@@ -51,25 +53,25 @@ Route::group([
             Route::get('tasks/{task}',                  [\App\Http\Controllers\Employee\TaskController::class, 'show'])->name('tasks.show');
             Route::patch('tasks/{task}/complete',       [\App\Http\Controllers\Employee\TaskController::class, 'markComplete'])->name('tasks.complete');
             Route::patch('tasks/{task}/progress',       [\App\Http\Controllers\Employee\TaskController::class, 'updateProgress'])->name('tasks.progress');
+            Route::post('tasks/{task}/comments',        [\App\Http\Controllers\Employee\TaskController::class, 'storeComment'])->name('tasks.comment');
+            Route::patch('tasks/{task}/status',          [\App\Http\Controllers\Employee\TaskController::class, 'changeStatus'])->name('tasks.status');
+            Route::post('tasks/{task}/assign',           [\App\Http\Controllers\Employee\TaskController::class, 'assignEmployee'])->name('tasks.assign');
+            Route::delete('tasks/{task}/employees/{employee}',[\App\Http\Controllers\Employee\TaskController::class, 'removeEmployee'])->name('tasks.remove');
 
             // ── Attendance ─────────────────────────────────
-            Route::get('attendance',                    [\App\Http\Controllers\Employee\AttendanceController::class, 'index'])->name('attendance.index');
-            Route::post('attendance/check-in',          [\App\Http\Controllers\Employee\AttendanceController::class, 'checkIn'])->name('attendance.checkin');
-            Route::post('attendance/check-out',         [\App\Http\Controllers\Employee\AttendanceController::class, 'checkOut'])->name('attendance.checkout');
+            Route::get('attendance',        [\App\Http\Controllers\Employee\AttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('attendance/checkin',  [\App\Http\Controllers\Employee\AttendanceController::class, 'checkIn'])->name('attendance.checkin');
+            Route::post('attendance/checkout', [\App\Http\Controllers\Employee\AttendanceController::class, 'checkOut'])->name('attendance.checkout');
 
-            // ── Schedule ───────────────────────────────────
-            Route::get('schedule',                      [\App\Http\Controllers\Employee\ScheduleController::class, 'index'])->name('schedule.index');
-
-            // ── Leave Requests ─────────────────────────────
-            Route::get('leave',                         [\App\Http\Controllers\Employee\LeaveController::class, 'index'])->name('leave.index');
-            Route::get('leave/create',                  [\App\Http\Controllers\Employee\LeaveController::class, 'create'])->name('leave.create');
-            Route::post('leave',                        [\App\Http\Controllers\Employee\LeaveController::class, 'store'])->name('leave.store');
-            Route::get('leave/{leave}',                 [\App\Http\Controllers\Employee\LeaveController::class, 'show'])->name('leave.show');
-            Route::delete('leave/{leave}',              [\App\Http\Controllers\Employee\LeaveController::class, 'destroy'])->name('leave.destroy');
-
-            // ── Salary / Payslips ──────────────────────────
-            Route::get('salary',                        [\App\Http\Controllers\Employee\SalaryController::class, 'index'])->name('salary.index');
-            Route::get('salary/{payroll}/slip',         [\App\Http\Controllers\Employee\SalaryController::class, 'slip'])->name('salary.slip');
+      
+            // ── Leave Requests & Payrolls ─────────────────────────────
+            Route::get('leaves',                          [LeaveController::class, 'index'])->name('leaves.index');
+            Route::get('leaves/create',                   [LeaveController::class, 'create'])->name('leaves.create');
+            Route::post('leaves',                         [LeaveController::class, 'store'])->name('leaves.store');
+            Route::delete('leaves/{leave}',               [LeaveController::class, 'destroy'])->name('leaves.destroy');
+            
+            Route::get('payroll',                         [PayrollController::class, 'index'])->name('payroll.index');
+            Route::get('payroll/{payroll}',               [PayrollController::class, 'show'])->name('payroll.show');
 
             // ── Sales employees only ───────────────────────
             Route::middleware('employee.sales')->group(function () {

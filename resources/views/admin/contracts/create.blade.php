@@ -271,7 +271,7 @@
                     <tr style="opacity:.5">
                         <td style="padding:6px 10px;font-weight:700">{{ $pay->payment_number }}</td>
                         <td colspan="4" style="padding:6px 10px;font-size:12px;color:var(--muted)">
-                            {{ $pay->label }} — ${{ number_format($pay->amount,0) }}
+                            {{ $pay->label }} — JD {{ number_format($pay->amount,0) }}
                             <span class="badge badge-paid" style="font-size:10px">{{ __('admin.paid') }}</span>
                         </td>
                         <td></td>

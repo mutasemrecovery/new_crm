@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', __('emp.dashboard')) — NovaCRM</title>
+    <title>@yield('title', __('emp.dashboard')) — RecoveryCRM</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @if(session('success')) <meta name="flash-success" content="{{ session('success') }}"> @endif

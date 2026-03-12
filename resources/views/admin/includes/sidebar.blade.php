@@ -2,7 +2,7 @@
     <div class="sidebar-logo">
         <div class="logo-icon"><i class="fas fa-bolt"></i></div>
         <div>
-            <div class="logo-text">NovaCRM</div>
+            <div class="logo-text">RecoveryCRM</div>
             <div class="logo-sub">{{ __('admin.admin_panel') }}</div>
         </div>
     </div>
@@ -32,9 +32,9 @@
            class="nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
             <i class="fas fa-users"></i><span>{{ __('admin.nav_employees') }}</span>
         </a>
-        <a href="{{ route('admin.users.index') }}"
-           class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-            <i class="fas fa-user-circle"></i><span>{{ __('admin.nav_users') }}</span>
+        <a href="{{ route('admin.attendance.index') }}"
+           class="nav-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}">
+            <i class="fas fa-calendar-check"></i><span>{{ __('admin.nav_attendance') }}</span>
         </a>
 
         <div class="nav-section-label">{{ __('admin.nav_finance') }}</div>
@@ -46,7 +46,12 @@
            class="nav-item {{ request()->routeIs('admin.commissions.*') ? 'active' : '' }}">
             <i class="fas fa-percentage"></i><span>{{ __('admin.nav_commissions') }}</span>
         </a>
-        <a href="#" class="nav-item {{ request()->routeIs('admin.payroll.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.leaves.index') }}"
+           class="nav-item {{ request()->routeIs('admin.leaves.*') ? 'active' : '' }}">
+            <i class="fas fa-umbrella-beach"></i><span>{{ __('admin.nav_leaves') }}</span>
+        </a>
+        <a href="{{ route('admin.payroll.index') }}"
+           class="nav-item {{ request()->routeIs('admin.payroll.*') ? 'active' : '' }}">
             <i class="fas fa-wallet"></i><span>{{ __('admin.nav_payroll') }}</span>
         </a>
 
@@ -54,7 +59,8 @@
         <a href="#" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
             <i class="fas fa-chart-bar"></i><span>{{ __('admin.nav_reports') }}</span>
         </a>
-        <a href="#" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+        <a href="{{ route('admin.settings.index') }}"
+           class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
             <i class="fas fa-cog"></i><span>{{ __('admin.nav_settings') }}</span>
         </a>
 

@@ -82,7 +82,7 @@
         <div class="stat-lbl">{{ __('admin.overdue_payments') }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-val" style="color:#f7b731;font-size:17px">${{ number_format($stats['pending_amount'],0) }}</div>
+        <div class="stat-val" style="color:#f7b731;font-size:17px">JD {{ number_format($stats['pending_amount'],0) }}</div>
         <div class="stat-lbl">{{ __('admin.pending_amount') }}</div>
     </div>
 </div>
@@ -144,11 +144,11 @@
                         {{ $contract->client->name }}
                     </a>
                 </td>
-                <td style="font-family:'Syne',sans-serif;font-weight:800">${{ number_format($contract->net_amount,0) }}</td>
+                <td style="font-family:'Syne',sans-serif;font-weight:800">JD {{ number_format($contract->net_amount,0) }}</td>
                 <td>
                     <div style="font-size:12px;color:var(--muted)">
-                        <span style="color:#43e97b;font-weight:600">${{ number_format($paidAmt,0) }}</span>
-                        / <span style="color:{{ $remaining>0?'#f7b731':'#43e97b' }};font-weight:600">${{ number_format($remaining,0) }}</span>
+                        <span style="color:#43e97b;font-weight:600">JD {{ number_format($paidAmt,0) }}</span>
+                        / <span style="color:{{ $remaining>0?'#f7b731':'#43e97b' }};font-weight:600">JD {{ number_format($remaining,0) }}</span>
                     </div>
                     <div class="prog-wrap"><div class="prog-fill" style="width:{{ $progress }}%"></div></div>
                     @if($overdueCount)

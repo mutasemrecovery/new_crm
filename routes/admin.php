@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\UserController;
@@ -59,9 +61,6 @@ Route::group([
             // Employees
             Route::resource('employees', EmployeeController::class);
 
-            // Users (app users)
-            Route::resource('users', UserController::class);
-
             // ── Clients ────────────────────────────────────────────────────────
             Route::resource('clients', ClientController::class);
 
@@ -75,7 +74,9 @@ Route::group([
             Route::resource('tasks', TaskController::class);
             Route::post('tasks/{task}/complete', [TaskController::class, 'markComplete'])->name('tasks.complete');
             Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
-
+            Route::post('tasks/{task}/status',           [TaskController::class, 'changeStatus'])->name('tasks.status');
+            Route::post('tasks/{task}/assign',           [TaskController::class, 'assignEmployee'])->name('tasks.assign');
+            Route::delete('tasks/{task}/employees/{employee}', [TaskController::class, 'removeEmployee'])->name('tasks.employees.remove');
             // ── العقود ───────────────────────────────────────────────────────
             Route::resource('contracts', ContractController::class);
 
@@ -91,6 +92,27 @@ Route::group([
             Route::get('commissions',                                  [CommissionController::class, 'index'])->name('commissions.index');
             Route::post('commissions/{commission}/pay',                [CommissionController::class, 'paySingle'])->name('commissions.pay-single');
             Route::post('commissions/employees/{employee}/pay-all',    [CommissionController::class, 'pay'])->name('commissions.pay-all');
+
+            Route::get('attendance',         [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
+            Route::get('settings',           [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+            Route::put('settings',           [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+            Route::put('settings/schedule', [\App\Http\Controllers\Admin\SettingsController::class, 'updateSchedule'])->name('settings.schedule');
+
+            Route::get('leaves',                          [LeaveController::class, 'index'])->name('leaves.index');
+            Route::get('leaves/{leave}',                  [LeaveController::class, 'show'])->name('leaves.show');
+            Route::patch('leaves/{leave}/approve',        [LeaveController::class, 'approve'])->name('leaves.approve');
+            Route::patch('leaves/{leave}/reject',         [LeaveController::class, 'reject'])->name('leaves.reject');
+            Route::get('leaves/balances',                 [LeaveController::class, 'balances'])->name('leaves.balances');
+            Route::patch('employees/{employee}/balance',  [LeaveController::class, 'updateBalance'])->name('leaves.balance.update');
+            
+            Route::get('payroll',                         [PayrollController::class, 'index'])->name('payroll.index');
+            Route::post('payroll/generate',               [PayrollController::class, 'generate'])->name('payroll.generate');
+            Route::post('payroll/generate-all',           [PayrollController::class, 'generateAll'])->name('payroll.generateAll');
+            Route::get('payroll/{payroll}',               [PayrollController::class, 'show'])->name('payroll.show');
+            Route::get('payroll/{payroll}/edit',          [PayrollController::class, 'edit'])->name('payroll.edit');
+            Route::put('payroll/{payroll}',               [PayrollController::class, 'update'])->name('payroll.update');
+            Route::patch('payroll/{payroll}/paid',        [PayrollController::class, 'markPaid'])->name('payroll.markPaid');
+            Route::delete('payroll/{payroll}',            [PayrollController::class, 'destroy'])->name('payroll.destroy');
         });
     }); // end admin prefix
 

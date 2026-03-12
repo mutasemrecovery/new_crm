@@ -106,7 +106,7 @@
         {{-- Amount --}}
         <div class="amount-box">
             <div class="amount-label">{{ __('admin.received_amount') }}</div>
-            <div class="amount-value">${{ number_format($receipt->amount, 2) }}</div>
+            <div class="amount-value">JD {{ number_format($receipt->amount, 2) }}</div>
             {{-- بمكن تضيف مكتبة تحويل الأرقام لحروف لاحقاً --}}
         </div>
 

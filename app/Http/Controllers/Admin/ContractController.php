@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Contract;
 use App\Models\ContractPayment;
 use App\Models\Client;
@@ -25,10 +24,10 @@ class ContractController extends Controller
         $contracts = $query->paginate(15)->withQueryString();
 
         $stats = [
-            'total'     => Contract::count(),
-            'active'    => Contract::where('status', 'active')->count(),
-            'completed' => Contract::where('status', 'completed')->count(),
-            'overdue'   => ContractPayment::overdue()->count(),
+            'total'          => Contract::count(),
+            'active'         => Contract::where('status', 'active')->count(),
+            'completed'      => Contract::where('status', 'completed')->count(),
+            'overdue'        => ContractPayment::overdue()->count(),
             'pending_amount' => ContractPayment::pending()->sum('amount'),
         ];
 
@@ -37,12 +36,9 @@ class ContractController extends Controller
 
     public function create(Request $request)
     {
-        $clients  = Client::orderBy('name')->get();
-        $services = Service::active()->orderBy('name')->get();
-        // pre-select client if coming from client profile
-        $selectedClient = $request->client_id
-            ? Client::find($request->client_id)
-            : null;
+        $clients        = Client::orderBy('name')->get();
+        $services       = Service::active()->orderBy('name')->get();
+        $selectedClient = $request->client_id ? Client::find($request->client_id) : null;
 
         return view('admin.contracts.create', compact('clients', 'services', 'selectedClient'));
     }
@@ -50,49 +46,45 @@ class ContractController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'client_id'    => 'required|exists:clients,id',
-            'start_date'   => 'required|date',
-            'end_date'     => 'nullable|date|after_or_equal:start_date',
-            'total_amount' => 'required|numeric|min:0',
-            'discount'     => 'nullable|numeric|min:0',
-            'tax'          => 'nullable|numeric|min:0',
-            'scope'        => 'nullable|string',
-            'notes'        => 'nullable|string',
-            'status'       => 'required|in:draft,active,completed,cancelled',
-            // items
-            'items'             => 'nullable|array',
+            'client_id'           => 'required|exists:clients,id',
+            'start_date'          => 'required|date',
+            'end_date'            => 'nullable|date|after_or_equal:start_date',
+            'total_amount'        => 'required|numeric|min:0',
+            'discount'            => 'nullable|numeric|min:0',
+            'tax'                 => 'nullable|numeric|min:0',
+            'scope'               => 'nullable|string',
+            'notes'               => 'nullable|string',
+            'status'              => 'required|in:draft,active,completed,cancelled',
+            'items'               => 'nullable|array',
             'items.*.description' => 'required_with:items|string',
             'items.*.service_id'  => 'nullable|exists:services,id',
             'items.*.quantity'    => 'nullable|numeric|min:0',
             'items.*.unit_price'  => 'nullable|numeric|min:0',
-            // payments
-            'payments'              => 'required|array|min:1',
-            'payments.*.label'      => 'nullable|string',
-            'payments.*.amount'     => 'required|numeric|min:0',
-            'payments.*.due_date'   => 'required|date',
+            'payments'            => 'required|array|min:1',
+            'payments.*.label'    => 'nullable|string',
+            'payments.*.amount'   => 'required|numeric|min:0',
+            'payments.*.due_date' => 'required|date',
         ]);
 
-        // حساب الصافي
         $total    = $data['total_amount'];
         $discount = $data['discount'] ?? 0;
-        $tax      = $data['tax'] ?? 0;
+        $tax      = $data['tax']      ?? 0;
         $net      = $total - $discount + $tax;
 
         $contract = Contract::create([
             'client_id'    => $data['client_id'],
-            'created_by'   => auth()->id(),
+            'created_by'   => $this->adminId(),
             'start_date'   => $data['start_date'],
             'end_date'     => $data['end_date'] ?? null,
             'total_amount' => $total,
             'discount'     => $discount,
             'tax'          => $tax,
             'net_amount'   => $net,
-            'scope'        => $data['scope'] ?? null,
-            'notes'        => $data['notes'] ?? null,
+            'scope'        => $data['scope']  ?? null,
+            'notes'        => $data['notes']  ?? null,
             'status'       => $data['status'],
         ]);
 
-        // حفظ البنود
         foreach ($request->input('items', []) as $item) {
             if (empty($item['description'])) continue;
             $qty   = $item['quantity']   ?? 1;
@@ -106,7 +98,6 @@ class ContractController extends Controller
             ]);
         }
 
-        // حفظ الدفعات
         foreach ($request->input('payments', []) as $i => $payment) {
             $contract->payments()->create([
                 'payment_number' => $i + 1,
@@ -163,10 +154,6 @@ class ContractController extends Controller
             ->with('success', __('admin.deleted_successfully', ['item' => __('admin.contract')]));
     }
 
-    // ═══════════════════════════════════════════════════════
-    // تسجيل دفع + إنشاء سند قبض تلقائي
-    // POST /admin/contracts/payments/{payment}/pay
-    // ═══════════════════════════════════════════════════════
     public function markPaymentPaid(Request $request, ContractPayment $payment)
     {
         if ($payment->status === 'paid') {
@@ -180,7 +167,7 @@ class ContractController extends Controller
             'notes'          => 'nullable|string',
         ]);
 
-        $data['issued_by'] = auth()->id();
+        $data['issued_by'] = $this->adminId();
         $receipt = $payment->markAsPaid($data);
 
         return redirect()
@@ -188,13 +175,19 @@ class ContractController extends Controller
             ->with('success', __('admin.payment_recorded') . ' — ' . $receipt->receipt_number);
     }
 
-    // ═══════════════════════════════════════════════════════
-    // طباعة سند القبض
-    // GET /admin/receipts/{receipt}/print
-    // ═══════════════════════════════════════════════════════
     public function printReceipt(\App\Models\PaymentReceipt $receipt)
     {
         $receipt->load('contractPayment.contract.client', 'issuedBy');
         return view('admin.contracts.receipt-print', compact('receipt'));
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Helper: يرجع الـ ID الصح حسب الـ guard المستخدم
+    // ─────────────────────────────────────────────────────────────
+    private function adminId(): int
+    {
+        return Auth::guard('admin')->id()
+            ?? Auth::id()
+            ?? 0;
     }
 }

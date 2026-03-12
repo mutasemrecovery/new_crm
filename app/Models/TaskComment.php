@@ -1,27 +1,21 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class TaskComment extends Model
 {
-    protected $fillable = [
-        'task_id',
-        'user_id',
-        'body',
-        'attachment',
-    ];
-
-    // ========== Relations ==========
-
-    public function task()
-    {
-        return $this->belongsTo(Task::class);
-    }
+    protected $guarded = [];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
     }
 
     public function likes()
@@ -29,15 +23,22 @@ class TaskComment extends Model
         return $this->hasMany(TaskCommentLike::class);
     }
 
-    // ========== Helpers ==========
-
-    public function isLikedBy(User $user): bool
+    // ── Helper: الاسم مهما كان المصدر ─────────────────
+    public function getAuthorNameAttribute(): string
     {
-        return $this->likes()->where('user_id', $user->id)->exists();
+        if ($this->admin_id && $this->admin) {
+            return $this->admin->name ?? 'Admin';
+        }
+        return $this->user?->name ?? __('admin.unknown');
     }
 
-    public function getLikesCountAttribute(): int
+    public function getIsAdminAttribute(): bool
     {
-        return $this->likes()->count();
+        return !is_null($this->admin_id);
+    }
+
+    public function getInitialAttribute(): string
+    {
+        return strtoupper(mb_substr($this->author_name, 0, 1));
     }
 }

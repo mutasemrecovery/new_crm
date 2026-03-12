@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('admin.login') }} — NovaCRM</title>
+    <title>{{ __('admin.login') }} — RecoveryCRM</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -532,7 +532,7 @@
             <div class="brand-logo">
                 <div class="brand-icon"><i class="fas fa-bolt"></i></div>
                 <div>
-                    <div class="brand-name">NovaCRM</div>
+                    <div class="brand-name">RecoveryCRM</div>
                     <div class="brand-tagline">{{ __('admin.admin_panel') }}</div>
                 </div>
             </div>

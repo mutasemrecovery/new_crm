@@ -341,7 +341,7 @@
             <div class="stat-mini-label">{{ __('admin.closed') }}</div>
         </div>
         <div class="stat-mini">
-            <div class="stat-mini-val" style="color:#f7b731">${{ number_format($stats['revenue'], 0) }}</div>
+            <div class="stat-mini-val" style="color:#f7b731">JD {{ number_format($stats['revenue'], 0) }}</div>
             <div class="stat-mini-label">{{ __('admin.monthly_revenue') }}</div>
         </div>
     </div>
@@ -407,7 +407,7 @@
                                 </td>
                                 
                                 <td><span
-                                        style="font-family:'Syne',sans-serif;font-weight:700">${{ number_format($client->monthly_value, 0) }}</span>
+                                        style="font-family:'Syne',sans-serif;font-weight:700">JD {{ number_format($client->monthly_value, 0) }}</span>
                                 </td>
                                 <td><span
                                         class="badge badge-{{ $client->status }}">{{ __('admin.' . $client->status) }}</span>

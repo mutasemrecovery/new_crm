@@ -1,216 +1,209 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
-use Exception;
+use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
-
     public function index(Request $request)
     {
-        $data = Admin::where('is_super', 0);
-        if ($request->search != '' ||  $request->search) {
-            $data->where(function ($query) use ($request) {
-                $query->where('admins.name', 'LIKE', "%$request->search%")
-                    ->orWhere('admins.email',  'LIKE', "%$request->search%")
-                    ->orWhere('admins.mobile',  'LIKE', "%$request->search%");
-            });
+        $query = Employee::with('user')->latest();
+
+        if ($s = $request->search) {
+            $query->where(fn($q) => $q
+                ->where('name',      'like', "%$s%")
+                ->orWhere('email',   'like', "%$s%")
+                ->orWhere('phone',   'like', "%$s%")
+                ->orWhere('job_title','like',"%$s%")
+            );
         }
-        $data = $data->paginate(10);
-        return view('admin.employee.index', compact('data'));
+        if ($request->department) $query->where('department',  $request->department);
+        if ($request->status)     $query->where('status',      $request->status);
+        if ($request->is_sales)   $query->where('is_sales',    true);
+
+        $employees = $query->paginate(15)->withQueryString();
+
+        $stats = [
+            'total'    => Employee::count(),
+            'active'   => Employee::where('status', 'active')->count(),
+            'vacation' => Employee::where('status', 'vacation')->count(),
+            'sales'    => Employee::where('is_sales', true)->count(),
+            'salary'   => Employee::where('status', 'active')->sum('salary'),
+        ];
+
+        return view('admin.employees.index', compact('employees', 'stats'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        if (auth()->user()->can('employee-add')) {
-            $roles = Role::get();
-            return view('admin.employee.create', compact('roles'));
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
-        }
+        return view('admin.employees.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        if (auth()->user()->can('employee-add')) {
-            $this->validate($request, [
-                'name' => 'required',
-                'email' => 'required|unique:admins,email',
-                'password' => 'required',
-                'roles' => 'required'
+        $data = $request->validate([
+            'name'              => 'required|string|max:255',
+            'name_en'           => 'nullable|string|max:255',
+            'phone'             => 'nullable|string|max:30',
+            'email'             => 'nullable|email|max:255',
+            'job_title'         => 'required|string|max:255',
+            'department'        => 'required|in:design,video,development,social_media,marketing,sales,accounting,management',
+            'specializations'   => 'nullable|string',   // comma-separated → JSON
+            'salary'            => 'nullable|numeric|min:0',
+            'is_sales'          => 'nullable|boolean',
+            'commission_rate'   => 'nullable|numeric|min:0|max:100',
+            'commission_type'   => 'nullable|in:per_deal,monthly_percentage',
+            'status'            => 'required|in:active,inactive,vacation',
+            'hire_date'         => 'nullable|date',
+            'notes'             => 'nullable|string',
+            'avatar'            => 'nullable|image|max:2048',
+            // user account (optional)
+            'create_account'    => 'nullable|boolean',
+            'user_phone'        => 'nullable|required_if:create_account,1|string|max:30|unique:users,phone',
+            'user_password'     => 'nullable|required_if:create_account,1|string|min:6',
+        ]);
+
+        // handle avatar upload
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        // handle specializations: "Photoshop, Laravel" → ["Photoshop","Laravel"]
+        $specializations = null;
+        if (!empty($data['specializations'])) {
+            $specializations = array_values(array_filter(
+                array_map('trim', explode(',', $data['specializations']))
+            ));
+        }
+
+        // create user account if requested
+        $userId = null;
+        if ($request->boolean('create_account')) {
+            $user = User::create([
+                'name'     => $data['name'],
+                'phone'    => $data['user_phone'],
+                'password' => Hash::make($data['user_password']),
+                'activate' => 1,
             ]);
-
-            DB::beginTransaction();
-            try {
-
-
-                $admin = new Admin([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'username' => $request->username,
-                    'password' => Hash::make($request->password),
-
-                ]);
-
-                $admin->save();
-                foreach ($request->roles as $role) {
-                    DB::table('model_has_roles')->insert([
-                        'role_id' => $role,
-                        'model_type' => 'App\Models\admin',
-                        'model_id' => $admin->id
-                    ]);
-                }
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Employee created successfully');
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::info("Error Occured", ['message' => $e]);
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Wrong');
-            }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
+            $userId = $user->id;
         }
+
+        Employee::create([
+            'user_id'          => $userId,
+            'name'             => $data['name'],
+            'name_en'          => $data['name_en']          ?? null,
+            'phone'            => $data['phone']            ?? null,
+            'email'            => $data['email']            ?? null,
+            'job_title'        => $data['job_title'],
+            'department'       => $data['department'],
+            'specializations'  => $specializations,
+            'salary'           => $data['salary']           ?? 0,
+            'is_sales'         => $request->boolean('is_sales'),
+            'commission_rate'  => $data['commission_rate']  ?? 0,
+            'commission_type'  => $data['commission_type']  ?? 'per_deal',
+            'avatar'           => $avatarPath,
+            'status'           => $data['status'],
+            'hire_date'        => $data['hire_date']        ?? null,
+            'notes'            => $data['notes']            ?? null,
+        ]);
+
+        return redirect()->route('admin.employees.index')
+            ->with('success', __('admin.created_successfully', ['item' => __('admin.employee')]));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function show(Employee $employee)
     {
-        if (auth()->user()->can('employee-delete')) {
-            DB::beginTransaction();
-            try {
-                Admin::find($id)->delete();
-                DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Admin deleted successfully');
-            } catch (Exception $e) {
-                DB::rollback();
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Error');
-            }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
-        }
+        $employee->load('user', 'commissions.contract.client');
+        return view('admin.employees.show', compact('employee'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function edit(Employee $employee)
     {
-        if (auth()->user()->can('employee-edit')) {
-            $admin = Admin::find($id);
-            $roles = Role::all();
-            $adminRole = $admin->roles->pluck('id')->all();
-            return view('admin.employee.edit', compact('admin', 'roles', 'adminRole'));
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
-        }
+        $employee->load('user');
+        return view('admin.employees.create', compact('employee'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Employee $employee)
     {
-        if (auth()->user()->can('employee-edit')) {
-            $this->validate($request, [
-                'name' => 'required',
-                'email' => 'required|unique:admins,email,' . $id,
-                'roles' => 'required'
-            ]);
+        $data = $request->validate([
+            'name'              => 'required|string|max:255',
+            'name_en'           => 'nullable|string|max:255',
+            'phone'             => 'nullable|string|max:30',
+            'email'             => 'nullable|email|max:255',
+            'job_title'         => 'required|string|max:255',
+            'department'        => 'required|in:design,video,development,social_media,marketing,sales,accounting,management',
+            'specializations'   => 'nullable|string',
+            'salary'            => 'nullable|numeric|min:0',
+            'is_sales'          => 'nullable|boolean',
+            'commission_rate'   => 'nullable|numeric|min:0|max:100',
+            'commission_type'   => 'nullable|in:per_deal,monthly_percentage',
+            'status'            => 'required|in:active,inactive,vacation',
+            'hire_date'         => 'nullable|date',
+            'notes'             => 'nullable|string',
+            'avatar'            => 'nullable|image|max:2048',
+            // user account updates
+            'user_phone'        => 'nullable|string|max:30|unique:users,phone,' . ($employee->user_id ?? 'NULL'),
+            'user_password'     => 'nullable|string|min:6',
+            'user_activate'     => 'nullable|boolean',
+        ]);
 
-            DB::beginTransaction();
-            try {
-                $admin = Admin::find($id);
-
-                $admin->name = $request->name;
-                $admin->email = $request->email;
-                $admin->username = $request->username;
-                if ($request->password) {
-                    $admin->password = Hash::make($request->password);
-                }
-                $admin->save();
-                DB::table('model_has_roles')->where('model_type', 'App\Models\admin')
-                    ->where('model_id', $id)->delete();
-                foreach ($request->roles as $role) {
-                    DB::table('model_has_roles')->insert([
-                        'role_id' => $role,
-                        'model_type' => 'App\Models\admin',
-                        'model_id' => $admin->id
-                    ]);
-                }
-                DB::commit();
-                return redirect()->route('admin.employee.index')
-                    ->with('success', 'Employee updated successfully');
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::info("Error Occured", ['message' => $e]);
-                return redirect()->route('admin.employee.index')
-                    ->with('error', 'Something Wrong');
-            }
-        } else {
-            return redirect()->back()
-                ->with('error', "Access Denied");
+        // avatar
+        if ($request->hasFile('avatar')) {
+            if ($employee->avatar) Storage::disk('public')->delete($employee->avatar);
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
+
+        // specializations
+        $specializations = null;
+        if (!empty($data['specializations'])) {
+            $specializations = array_values(array_filter(
+                array_map('trim', explode(',', $data['specializations']))
+            ));
+        }
+
+        // update linked user account
+        if ($employee->user) {
+            $userUpdate = [];
+            if (!empty($data['user_phone']))    $userUpdate['phone']    = $data['user_phone'];
+            if (!empty($data['user_password'])) $userUpdate['password'] = Hash::make($data['user_password']);
+            if (isset($data['user_activate']))  $userUpdate['activate'] = $request->boolean('user_activate') ? 1 : 2;
+            if ($userUpdate) $employee->user->update($userUpdate);
+        }
+
+        $employee->update([
+            'name'            => $data['name'],
+            'name_en'         => $data['name_en']         ?? null,
+            'phone'           => $data['phone']           ?? null,
+            'email'           => $data['email']           ?? null,
+            'job_title'       => $data['job_title'],
+            'department'      => $data['department'],
+            'specializations' => $specializations,
+            'salary'          => $data['salary']          ?? 0,
+            'is_sales'        => $request->boolean('is_sales'),
+            'commission_rate' => $data['commission_rate'] ?? 0,
+            'commission_type' => $data['commission_type'] ?? 'per_deal',
+            'avatar'          => $data['avatar']          ?? $employee->avatar,
+            'status'          => $data['status'],
+            'hire_date'       => $data['hire_date']       ?? null,
+            'notes'           => $data['notes']           ?? null,
+        ]);
+
+        return redirect()->route('admin.employees.index')
+            ->with('success', __('admin.updated_successfully', ['item' => __('admin.employee')]));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Employee $employee)
     {
-        DB::beginTransaction();
-        try {
-            Admin::find($id)->delete();
-            DB::table('model_has_roles')->where('model_type', 'App\Models\admin')->where('model_id', $id)->delete();
-            DB::commit();
-            return redirect()->route('admins.index')
-                ->with('success', 'Admin deleted successfully');
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->route('admins.index')
-                ->with('error', 'Something Error');
-        }
+        if ($employee->avatar) Storage::disk('public')->delete($employee->avatar);
+        $employee->delete();
+
+        return redirect()->route('admin.employees.index')
+            ->with('success', __('admin.deleted_successfully', ['item' => __('admin.employee')]));
     }
 }

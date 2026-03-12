@@ -9,7 +9,7 @@
     <div class="sidebar-logo">
         <div class="logo-icon"><i class="fas fa-bolt"></i></div>
         <div>
-            <div class="logo-text">NovaCRM</div>
+            <div class="logo-text">RecoveryCRM</div>
             <div class="logo-sub">{{ __('emp.portal') }}</div>
         </div>
     </div>
@@ -30,7 +30,7 @@
             <i class="fas fa-check-square"></i>
             <span>{{ __('emp.nav_tasks') }}</span>
             @if(($pendingTasksCount ?? 0) > 0)
-                <span class="nav-badge">{{ $pendingTasksCount ?? 0 }}</span>
+                <span class="nav-badge">{{ $pendingTasksCount }}</span>
             @endif
         </a>
 
@@ -38,12 +38,6 @@
            class="nav-item {{ request()->routeIs('employee.attendance.*') ? 'active' : '' }}">
             <i class="fas fa-clock"></i>
             <span>{{ __('emp.nav_attendance') }}</span>
-        </a>
-
-        <a href="{{ route('employee.schedule.index') }}"
-           class="nav-item {{ request()->routeIs('employee.schedule.*') ? 'active' : '' }}">
-            <i class="fas fa-calendar-alt"></i>
-            <span>{{ __('emp.nav_schedule') }}</span>
         </a>
 
         {{-- Sales section (only for is_sales employees) --}}
@@ -71,16 +65,16 @@
 
         <div class="nav-section-label">{{ __('emp.nav_personal') }}</div>
 
-        <a href="{{ route('employee.salary.index') }}"
-           class="nav-item {{ request()->routeIs('employee.salary.*') ? 'active' : '' }}">
-            <i class="fas fa-wallet"></i>
-            <span>{{ __('emp.nav_salary') }}</span>
+        <a href="{{ route('employee.leaves.index') }}"
+           class="nav-item {{ request()->routeIs('employee.leaves.*') ? 'active' : '' }}">
+            <i class="fas fa-umbrella-beach"></i>
+            <span>{{ __('emp.nav_leaves') }}</span>
         </a>
 
-        <a href="{{ route('employee.leave.index') }}"
-           class="nav-item {{ request()->routeIs('employee.leave.*') ? 'active' : '' }}">
-            <i class="fas fa-plane-departure"></i>
-            <span>{{ __('emp.nav_leave') }}</span>
+        <a href="{{ route('employee.payroll.index') }}"
+           class="nav-item {{ request()->routeIs('employee.payroll.*') ? 'active' : '' }}">
+            <i class="fas fa-wallet"></i>
+            <span>{{ __('emp.nav_payroll') }}</span>
         </a>
 
         <a href="{{ route('employee.profile') }}"

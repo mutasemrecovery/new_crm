@@ -296,7 +296,7 @@
                     <td><span class="badge badge-{{ $emp->department }}">{{ __('admin.' . $emp->department) }}</span></td>
                     <td><span class="badge badge-{{ $emp->status }}">{{ __('admin.' . $emp->status) }}</span></td>
                     <td style="color:var(--muted);font-size:12px;">{{ $emp->hire_date?->format('Y-m-d') }}</td>
-                    <td style="font-weight:700;">${{ number_format($emp->salary, 0) }}</td>
+                    <td style="font-weight:700;">JD {{ number_format($emp->salary, 0) }}</td>
                     <td>
                         <a href="{{ route('admin.employees.show', $emp) }}" style="color:var(--muted);font-size:13px;" title="{{ __('admin.actions') }}">
                             <i class="fas fa-eye"></i>
@@ -320,7 +320,7 @@
                     <td><span class="badge badge-{{ $emp['dept'] }}">{{ __('admin.' . $emp['dept']) }}</span></td>
                     <td><span class="badge badge-{{ $emp['status'] }}">{{ __('admin.' . $emp['status']) }}</span></td>
                     <td style="color:var(--muted);font-size:12px;">{{ $emp['hire'] }}</td>
-                    <td style="font-weight:700;">${{ $emp['salary'] }}</td>
+                    <td style="font-weight:700;">JD {{ $emp['salary'] }}</td>
                     <td><a href="#" style="color:var(--muted);font-size:13px;"><i class="fas fa-eye"></i></a></td>
                 </tr>
                 @endforeach

@@ -41,7 +41,8 @@ return new class extends Migration
         Schema::create('task_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('admin_id')->nullable()->constrained()->cascadeOnDelete();
             $table->text('body');
             $table->string('attachment')->nullable();        // مرفقات
             $table->timestamps();

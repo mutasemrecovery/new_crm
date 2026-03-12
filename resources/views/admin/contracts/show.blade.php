@@ -86,17 +86,17 @@
 {{-- KPIs --}}
 <div class="kpi-strip">
     <div class="kpi">
-        <div class="kpi-val" style="color:var(--accent)">${{ number_format($contract->net_amount,0) }}</div>
+        <div class="kpi-val" style="color:var(--accent)">JD {{ number_format($contract->net_amount,0) }}</div>
         <div class="kpi-lbl">{{ __('admin.contract_value') }}</div>
     </div>
     <div class="kpi">
-        <div class="kpi-val" style="color:#43e97b">${{ number_format($contract->paid_amount,0) }}</div>
+        <div class="kpi-val" style="color:#43e97b">JD {{ number_format($contract->paid_amount,0) }}</div>
         <div class="kpi-lbl">{{ __('admin.paid') }}</div>
         <div class="prog-wrap"><div class="prog-fill" style="width:{{ $contract->payment_progress }}%"></div></div>
     </div>
     <div class="kpi">
         <div class="kpi-val" style="color:{{ $contract->remaining_amount > 0 ? '#f7b731' : '#43e97b' }}">
-            ${{ number_format($contract->remaining_amount,0) }}
+            JD {{ number_format($contract->remaining_amount,0) }}
         </div>
         <div class="kpi-lbl">{{ __('admin.remaining') }}</div>
     </div>
@@ -129,24 +129,24 @@
             @endif
             <div class="dl-row">
                 <span class="dl-label">{{ __('admin.total_amount') }}</span>
-                <span class="dl-val">${{ number_format($contract->total_amount,2) }}</span>
+                <span class="dl-val">JD {{ number_format($contract->total_amount,2) }}</span>
             </div>
             @if($contract->discount > 0)
             <div class="dl-row">
                 <span class="dl-label">{{ __('admin.discount') }}</span>
-                <span class="dl-val" style="color:var(--accent2)">-${{ number_format($contract->discount,2) }}</span>
+                <span class="dl-val" style="color:var(--accent2)">-JD {{ number_format($contract->discount,2) }}</span>
             </div>
             @endif
             @if($contract->tax > 0)
             <div class="dl-row">
                 <span class="dl-label">{{ __('admin.tax') }}</span>
-                <span class="dl-val">+${{ number_format($contract->tax,2) }}</span>
+                <span class="dl-val">+JD {{ number_format($contract->tax,2) }}</span>
             </div>
             @endif
             <div class="dl-row">
                 <span class="dl-label">{{ __('admin.net_amount') }}</span>
                 <span class="dl-val" style="font-family:'Syne',sans-serif;font-size:15px;color:var(--accent)">
-                    ${{ number_format($contract->net_amount,2) }}
+                    JD {{ number_format($contract->net_amount,2) }}
                 </span>
             </div>
             <div class="dl-row">
@@ -186,7 +186,7 @@
                     {{ $item->description }}
                     @if($item->quantity != 1)<span style="color:var(--muted)"> ×{{ $item->quantity }}</span>@endif
                 </span>
-                <span class="dl-val">${{ number_format($item->total,0) }}</span>
+                <span class="dl-val">JD {{ number_format($item->total,0) }}</span>
             </div>
             @endforeach
         </div>
@@ -234,7 +234,7 @@
                             <div style="font-size:11px;color:var(--muted)">{{ __('admin.paid_on') }}: {{ $payment->paid_at->format('d M Y') }}</div>
                             @endif
                         </td>
-                        <td style="font-family:'Syne',sans-serif;font-weight:800">${{ number_format($payment->amount,0) }}</td>
+                        <td style="font-family:'Syne',sans-serif;font-weight:800">JD {{ number_format($payment->amount,0) }}</td>
                         <td style="color:{{ $isOverdue ? 'var(--accent2)' : 'var(--text)' }}">
                             {{ $payment->due_date->format('d M Y') }}
                             @if($isOverdue)
@@ -244,7 +244,7 @@
                         <td><span class="badge {{ $badgeClass }}">{{ $badgeLabel }}</span></td>
                         <td>
                             @if($payment->status === 'paid' && $payment->receipt)
-                                <a href="{{ route('receipts.print', $payment->receipt) }}"
+                                <a href="{{ route('admin.receipts.print', $payment->receipt) }}"
                                    target="_blank"
                                    class="btn btn-ghost btn-sm" title="{{ __('admin.print_receipt') }}">
                                     <i class="fas fa-print"></i>

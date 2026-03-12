@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('contract_number')->unique();          // CTR-2026-001
             $table->foreignId('client_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->constrained('admins');
 
             // المبالغ
             $table->decimal('total_amount', 10, 2);               // المبلغ الإجمالي للعقد

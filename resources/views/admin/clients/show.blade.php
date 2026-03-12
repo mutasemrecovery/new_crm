@@ -64,8 +64,7 @@
 </div>
 
 <div class="kpi-strip">
-    <div class="kpi"><div class="kpi-val" style="color:var(--accent)">${{ number_format($client->monthly_value,0) }}</div><div class="kpi-lbl">{{ __('admin.monthly_value') }}</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:#43e97b">${{ number_format($client->invoices->where('status','paid')->sum('total'),0) }}</div><div class="kpi-lbl">{{ __('admin.total_paid') }}</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--accent)">JD {{ number_format($client->monthly_value,0) }}</div><div class="kpi-lbl">{{ __('admin.monthly_value') }}</div></div>
     <div class="kpi"><div class="kpi-val">{{ $client->tasks->count() }}</div><div class="kpi-lbl">{{ __('admin.total_tasks') }}</div></div>
     <div class="kpi"><div class="kpi-val">{{ $client->clientServices->count() }}</div><div class="kpi-lbl">{{ __('admin.active_services') }}</div></div>
 </div>
@@ -124,7 +123,7 @@
         <div class="card">
             <div class="card-head">
                 <div class="card-title"><i class="fas fa-layer-group"></i> {{ __('admin.services') }}</div>
-                <span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${{ number_format($client->clientServices->sum('price'),0) }}/{{ __('admin.month') }}</span>
+                <span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">JD {{ number_format($client->clientServices->sum('price'),0) }}/{{ __('admin.month') }}</span>
             </div>
             @forelse($client->clientServices as $cs)
             <div class="svc-item">
@@ -137,7 +136,7 @@
                     </div>
                 </div>
                 <div style="text-align:end">
-                    <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${{ number_format($cs->price,0) }}</div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">JD {{ number_format($cs->price,0) }}</div>
                     <span class="badge badge-{{ $cs->status }}" style="font-size:10px;margin-top:3px">{{ __('admin.'.$cs->status) }}</span>
                 </div>
             </div>
@@ -166,20 +165,8 @@
         </div>
 
         <div class="card">
-            <div class="card-head">
-                <div class="card-title"><i class="fas fa-file-invoice-dollar"></i> {{ __('admin.nav_invoices') }} ({{ $client->invoices->count() }})</div>
-                <a href="{{ route('admin.invoices.create') }}?client_id={{ $client->id }}" class="link-sm">+ {{ __('admin.new_invoice') }}</a>
-            </div>
-            @forelse($client->invoices->sortByDesc('created_at')->take(5) as $inv)
-            <div class="inv-row">
-                <span style="font-family:'Syne',sans-serif;font-size:11px;color:var(--muted)">{{ $inv->invoice_number }}</span>
-                <span class="badge badge-{{ $inv->status }}" style="font-size:10px">{{ __('admin.'.$inv->status) }}</span>
-                <span style="flex:1"></span>
-                <span style="font-family:'Syne',sans-serif;font-weight:800">${{ number_format($inv->total,0) }}</span>
-                <a href="{{ route('admin.invoices.show', $inv) }}" style="color:var(--muted);font-size:13px;text-decoration:none;margin-inline-start:6px"><i class="fas fa-eye"></i></a>
-            </div>
-            @empty<p class="empty-note">{{ __('admin.no_invoices') }}</p>
-            @endforelse
+          
+            
         </div>
     </div>
 </div>

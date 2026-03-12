@@ -22,7 +22,7 @@ class PaymentReceipt extends Model
 
     public function issuedBy()
     {
-        return $this->belongsTo(User::class, 'issued_by');
+        return $this->belongsTo(Admin::class, 'issued_by');
     }
 
     /** اختصار للوصول للعقد */

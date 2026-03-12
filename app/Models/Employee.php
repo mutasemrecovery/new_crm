@@ -46,8 +46,7 @@ class Employee extends Model
     public function tasks()
     {
         return $this->belongsToMany(Task::class, 'task_employees')
-                    ->withPivot('assigned_at')
-                    ->withTimestamps();
+            ->withPivot('assigned_at');
     }
 
     public function activeTasks()
@@ -67,8 +66,14 @@ class Employee extends Model
 
     // ========== Scopes ==========
 
-    public function scopeActive($q)    { return $q->where('status', 'active'); }
-    public function scopeIsSales($q)   { return $q->where('is_sales', true); }
+    public function scopeActive($q)
+    {
+        return $q->where('status', 'active');
+    }
+    public function scopeIsSales($q)
+    {
+        return $q->where('is_sales', true);
+    }
 
     // ========== Accessors ==========
 
@@ -80,7 +85,7 @@ class Employee extends Model
 
     public function getDepartmentLabelAttribute(): string
     {
-        return match($this->department) {
+        return match ($this->department) {
             'design'       => 'تصميم',
             'video'        => 'فيديو',
             'development'  => 'برمجة',

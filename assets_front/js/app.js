@@ -1,4 +1,4 @@
-/* NovaCRM Employee Portal — app.js */
+/* RecoveryCRM Employee Portal — app.js */
 
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');

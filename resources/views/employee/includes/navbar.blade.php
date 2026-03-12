@@ -84,7 +84,6 @@
                     <span>{{ auth()->user()->employee?->job_title ?? __('emp.employee') }}</span>
                 </div>
                 <a href="{{ route('employee.profile') }}"><i class="fas fa-user"></i> {{ __('emp.nav_profile') }}</a>
-                <a href="{{ route('employee.salary.index') }}"><i class="fas fa-wallet"></i> {{ __('emp.nav_salary') }}</a>
                 <hr>
                 <form action="{{ route('employee.logout') }}" method="POST">
                     @csrf

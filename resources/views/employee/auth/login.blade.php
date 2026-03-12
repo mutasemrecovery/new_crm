@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ app()->getLocale() === 'ar' ? 'تسجيل دخول الموظف' : 'Employee Login' }} — NovaCRM</title>
+    <title>{{ app()->getLocale() === 'ar' ? 'تسجيل دخول الموظف' : 'Employee Login' }} — RecoveryCRM</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -534,7 +534,7 @@
             <div class="info-logo">
                 <div class="info-logo-icon"><i class="fas fa-bolt"></i></div>
                 <div>
-                    <div class="info-logo-name">NovaCRM</div>
+                    <div class="info-logo-name">RecoveryCRM</div>
                     <div class="info-logo-sub">{{ app()->getLocale() === 'ar' ? 'بوابة الموظفين' : 'Employee Portal' }}</div>
                 </div>
             </div>
@@ -713,7 +713,7 @@
 
                 <div class="contact-admin">
                     {{ app()->getLocale() === 'ar' ? 'مشكلة في الدخول؟' : 'Having trouble?' }}
-                    <a href="mailto:admin@novacrm.com">
+                    <a href="mailto:admin@RecoveryCRM.com">
                         {{ app()->getLocale() === 'ar' ? 'تواصل مع المدير' : 'Contact your admin' }}
                     </a>
                 </div>

@@ -49,8 +49,8 @@
 </div>
 
 <div class="kpi-strip">
-    <div class="kpi"><div class="kpi-val" style="color:#f7b731">${{ number_format($stats['total_pending'],2) }}</div><div class="kpi-lbl">{{ __('admin.pending_payout') }}</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:#43e97b">${{ number_format($stats['total_paid'],2) }}</div><div class="kpi-lbl">{{ __('admin.total_paid_out') }}</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#f7b731">JD {{ number_format($stats['total_pending'],2) }}</div><div class="kpi-lbl">{{ __('admin.pending_payout') }}</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#43e97b">JD {{ number_format($stats['total_paid'],2) }}</div><div class="kpi-lbl">{{ __('admin.total_paid_out') }}</div></div>
     <div class="kpi"><div class="kpi-val">{{ $stats['count_pending'] }}</div><div class="kpi-lbl">{{ __('admin.pending_count') }}</div></div>
 </div>
 
@@ -69,8 +69,8 @@
             </div>
         </div>
         <div class="emp-stats">
-            <div class="emp-stat"><div class="emp-stat-val" style="color:#f7b731">${{ number_format($empComms->where('status','pending')->sum('amount'),0) }}</div><div class="emp-stat-lbl">{{ __('admin.pending') }}</div></div>
-            <div class="emp-stat"><div class="emp-stat-val" style="color:#43e97b">${{ number_format($empComms->where('status','paid')->sum('amount'),0) }}</div><div class="emp-stat-lbl">{{ __('admin.paid') }}</div></div>
+            <div class="emp-stat"><div class="emp-stat-val" style="color:#f7b731">JD {{ number_format($empComms->where('status','pending')->sum('amount'),0) }}</div><div class="emp-stat-lbl">{{ __('admin.pending') }}</div></div>
+            <div class="emp-stat"><div class="emp-stat-val" style="color:#43e97b">JD {{ number_format($empComms->where('status','paid')->sum('amount'),0) }}</div><div class="emp-stat-lbl">{{ __('admin.paid') }}</div></div>
         </div>
         @if($empComms->where('status','pending')->count() > 0)
         <form action="{{ route('admin.commissions.pay-employee', $emp) }}" method="POST">
@@ -134,7 +134,7 @@
                         @endif
                     </td>
                     <td style="color:var(--muted)">{{ $comm->rate }}%</td>
-                    <td style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${{ number_format($comm->amount,2) }}</td>
+                    <td style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">JD {{ number_format($comm->amount,2) }}</td>
                     <td><span class="badge badge-{{ $comm->status }}">{{ __('admin.'.$comm->status) }}</span></td>
                     <td style="font-size:12px;color:var(--muted)">{{ $comm->paid_at?->format('d M Y') ?? '—' }}</td>
                     <td>

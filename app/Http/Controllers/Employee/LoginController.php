@@ -8,17 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /**
-     * Show employee login form.
-     */
     public function showLogin()
     {
         return view('employee.auth.login');
     }
 
-    /**
-     * Handle login — users table uses phone + password.
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -26,12 +20,7 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        $credentials = [
-            'phone'    => $request->phone,
-            'password' => $request->password,
-        ];
-
-        // Check if account is active (activate = 1)
+        // Check if account is active before attempting
         $user = \App\Models\User::where('phone', $request->phone)->first();
 
         if ($user && $user->activate == 2) {
@@ -44,8 +33,13 @@ class LoginController extends Controller
                 ]);
         }
 
-        if (Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::guard('web')->attempt(
+            ['phone' => $request->phone, 'password' => $request->password],
+            $request->boolean('remember')
+        )) {
             $request->session()->regenerate();
+
+            // نفس أسلوب الـ admin — intended بيحترم الـ locale prefix تلقائياً
             return redirect()->intended(route('employee.dashboard'));
         }
 
@@ -58,9 +52,6 @@ class LoginController extends Controller
             ]);
     }
 
-    /**
-     * Logout.
-     */
     public function logout(Request $request)
     {
         Auth::guard('web')->logout();

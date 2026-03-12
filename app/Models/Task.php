@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,6 @@ class Task extends Model
 
     // ========== Relations ==========
 
-  
     public function client()
     {
         return $this->belongsTo(Client::class);
@@ -30,15 +30,13 @@ class Task extends Model
 
     public function creator()
     {
-        // created_by -> users table (الموظف أو الأدمن اللي أنشأ)
         return $this->belongsTo(User::class, 'created_by');
     }
 
     public function employees()
     {
         return $this->belongsToMany(Employee::class, 'task_employees')
-                    ->withPivot('assigned_at')
-                    ->withTimestamps();
+                    ->withPivot('assigned_at');
     }
 
     public function comments()
@@ -46,14 +44,47 @@ class Task extends Model
         return $this->hasMany(TaskComment::class)->latest();
     }
 
-    // ========== Scopes (للـ Kanban) ==========
+    public function statusLogs()
+    {
+        return $this->hasMany(TaskStatusLog::class)->latest();
+    }
+
+    // ========== Helpers ==========
+
+    /**
+     * تغيير الحالة مع تسجيل في الـ history
+     */
+    public function changeStatus(
+        string $newStatus,
+        string $changerType, // 'user' | 'admin'
+        int    $changerId,
+        string $changerName,
+        ?string $note = null
+    ): void {
+        $oldStatus = $this->status;
+
+        if ($oldStatus === $newStatus) return;
+
+        $this->update(['status' => $newStatus]);
+
+        TaskStatusLog::create([
+            'task_id'       => $this->id,
+            'from_status'   => $oldStatus,
+            'to_status'     => $newStatus,
+            'changed_by'    => $changerId,
+            'changer_type'  => $changerType,
+            'changer_name'  => $changerName,
+            'note'          => $note,
+        ]);
+    }
+
+    // ========== Scopes ==========
 
     public function scopeTodo($q)       { return $q->where('status', 'todo'); }
     public function scopeInProgress($q) { return $q->where('status', 'in_progress'); }
     public function scopeInReview($q)   { return $q->where('status', 'review'); }
     public function scopeDone($q)       { return $q->where('status', 'done'); }
     public function scopeOpen($q)       { return $q->whereNotIn('status', ['done', 'cancelled']); }
-
     public function scopeForEmployee($q, int $employeeId)
     {
         return $q->whereHas('employees', fn($eq) => $eq->where('employee_id', $employeeId));
@@ -68,9 +99,11 @@ class Task extends Model
             && !in_array($this->status, ['done', 'cancelled']);
     }
 
-      public function isOverdue(): bool
+    public function isOverdue(): bool
     {
-        return $this->due_date && $this->due_date->isPast() && $this->status !== 'done';
+        return $this->due_date
+            && $this->due_date->isPast()
+            && $this->status !== 'done';
     }
 
     public function getStatusLabelAttribute(): string
